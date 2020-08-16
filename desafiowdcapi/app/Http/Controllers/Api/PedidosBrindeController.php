@@ -36,9 +36,11 @@ class PedidosBrindeController extends Controller
         }else{
             $novo_pedido = new Pedidos_Brinde;
             $novo_pedido->email = $request->email;
-            
+           
             if($novo_pedido->save()){
-                \App\Jobs\EmailConfirmacaoCompra::dispatch($request->email)->delay(now());
+                $novo_pedido->token = encrypt($novo_pedido->id);
+                $novo_pedido->save();
+                \App\Jobs\EmailConfirmacaoCompra::dispatch($novo_pedido)->delay(now());
                 return response()->json('Acabamos de receber seu pedido verifique seu email para preencer as infromações de
                 envio',200);
             }else{
@@ -59,6 +61,8 @@ class PedidosBrindeController extends Controller
     public function show($id)
     {
         //
+
+        $id = decrypt($id);
         return Pedidos_Brinde::find($id);
     }
 
@@ -91,4 +95,13 @@ class PedidosBrindeController extends Controller
     {
         //
     }
+
+    function generateRandomString($size = 7){
+        $chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuwxyz0123456789";
+        $randomString = '';
+        for($i = 0; $i < $size; $i = $i+1){
+           $randomString .= $chars[mt_rand(0,60)];
+        }
+        return $randomString;
+     }
 }

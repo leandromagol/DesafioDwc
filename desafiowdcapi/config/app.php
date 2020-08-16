@@ -134,6 +134,9 @@ return [
     |
     */
 
+    'client_url' => env('CLIENT_URL','http://localhost:8080/#/'),
+
+
     'providers' => [
 
         /*

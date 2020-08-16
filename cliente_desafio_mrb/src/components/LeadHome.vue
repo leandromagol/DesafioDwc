@@ -64,7 +64,9 @@ export default {
               icon: "success",
               title: "Email enviado com sucesso ",
               text: res.data,
-              showConfirmButton: false
+              showConfirmButton: false,
+              allowOutsideClick: false
+
             });
           }
         })

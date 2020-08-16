@@ -11,8 +11,17 @@
                 </h4>
               </div>
               <div class="border p-3 p-md-5 bg-white rounded shadow">
-                <h3>Para receber seu brinde por favor</h3>
+                
                 <form @submit.prevent="enviar_pedido_binde()">
+                    <p v-if="errors.length > 0">
+                      <b>Por favor, corrija o(s) seguinte(s) erro(s):</b>
+                      <div  v-for="error in errors" class="alert alert-warning alert-dismissible fade show" role="alert">
+                            {{ error }}
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                        </button>
+                      </div>
+                    </p>
                   <div class="form-group ">
                     <label class="d-flex justify-content-start" for="email"
                       >Email</label
@@ -25,6 +34,7 @@
                       type="email"
                       name="email"
                       value
+                      readonly  
                     />
                   </div>
                   <div class="form-group">
@@ -38,6 +48,7 @@
                       type="text"
                       name="email"
                       value
+                      required
                     />
                   </div>
                   <div class="row">
@@ -55,6 +66,7 @@
                         value
                         mask="#####-###"
                         @keyup.native="buscar"
+                        required
                       />
                     </div>
                     <div class="form-group col-2">
@@ -69,6 +81,7 @@
                         name="uf"
                         value
                         mask="AA"
+                        required
                       />
                     </div>
                     <div class="form-group col-6">
@@ -82,6 +95,7 @@
                         type="text"
                         name="cidade"
                         value
+                        required
                       />
                     </div>
                     <div class="form-group col-2">
@@ -95,6 +109,7 @@
                         type="text"
                         name="numero"
                         value
+                        required
                       />
                     </div>
                     <div class="form-group col-10">
@@ -110,6 +125,7 @@
                         type="text"
                         name="logradouro"
                         value
+                        required
                       />
                     </div>
                     <div class="form-group col-12">
@@ -124,7 +140,9 @@
                         class="form-control"
                         name="telefone"
                         value
-                        :mask="['(##) ####-####', '(##) #####-####']"
+                        :mask="['(##)####-####', '(##)#####-####']"
+                        required
+                        
                       />
                     </div>
                   </div>
@@ -166,49 +184,128 @@ export default {
       numero: "",
       logradouro: "",
       telefone: "",
-      message: ""
+      message: "",
+      errors: [],
     };
   },
-  mounted: function() {},
+  mounted: function() {
+    this.verifica_token();
+  },
   methods: {
     enviar_pedido_binde: function() {
-      axios.put(this.apiurl+'pedidosbrinde/1',{email:this.email,nome:this.nome,uf:this.uf,cep:this.cep,cidade:this.cidade,logradouro:this.logradouro,telefone:this.telefone,numero:this.numero})
+        if (this.validade_from() == true) {
+        axios.post(this.apiurl+'cliente',{email:this.email,nome:this.nome,uf:this.uf,cep:this.cep,cidade:this.cidade,logradouro:this.logradouro,telefone:this.telefone,numero:this.numero})
       .then(res=>{
-        console.log(res);
-        if (res.status == 200 ) {
+        if (res.status == 201 ) {
            this.$swal.fire({
             icon: "success",
             title: "Recebemos sua solicitação aguarde logo enviaremos seu binde",
-            showConfirmButton: false
+            showConfirmButton: false,
+            allowOutsideClick: false
           });
         }
       }).catch(err=>{
 
       })
+      }
+      
     },
     buscar: function() {
-      
+       
       if (/^[0-9]{8}$/.test(this.cep)) {
+        this.$swal.fire({
+            icon: "success",
+            title: "Estamos buscando seu endereço",
+            showConfirmButton: false
+          });
         axios
           .get("https://viacep.com.br/ws/" + this.cep + "/json/")
           .then(res => {
-            if (res.status == 200) {
-              console.log(res.data);
+            this.$swal.close()
+            if (res.status == 200 && !res.data.erro) {
               this.cidade = res.data.localidade;
               this.uf = res.data.uf;
               this.logradouro = res.data.bairro + " " + res.data.logradouro;
             }
+            if(res.data.erro){
+             this.$swal.fire({
+            icon: "error",
+            title: "CEP invalido",
+            showConfirmButton: true
+          });
+          this.errors = [];
+           this.errors.push('Cep invalido');
+            }
           })
           .catch(err => {
             this.$swal.fire({
-            icon: "erro",
-            title: err,
-            showConfirmButton: false
+            icon: "error",
+            title: "erro ao busca tente novamente",
+            showConfirmButton: true
           });
           });
       }
+    },
+    validade_from:function(){
+          this.errors = [];
+          var telefoneREG = new RegExp('^((1[1-9])|([2-9][0-9]))((3[0-9]{3}[0-9]{4})|(9[0-9]{3}[0-9]{5}))$');
+         
+
+      if (!this.email) {
+          this.errors.push('O email é obrigatório.');
+         }
+         if (!this.nome) {
+          this.errors.push('O nome é obrigatório.');
+         }
+         if (!this.uf) {
+          this.errors.push('O uf é obrigatório.');
+         }
+         if (!this.cep) {
+          this.errors.push('O cep é obrigatório.');
+         }
+         if (!this.cidade) {
+          this.errors.push('A cidade é obrigatório.');
+         }
+         if (!this.numero) {
+          this.errors.push('O numero é obrigatório.');
+         }
+         if (!this.logradouro) {
+          this.errors.push('O logradouro é obrigatório.');
+         }
+        if (!this.telefone) {
+          this.errors.push('O telefone é obrigatório.');
+         }
+         if (telefoneREG.test(this.telefone)) {
+         }else{
+          this.errors.push('O telefone é invalido.');
+         }
+         if(this.errors.length != 0){
+            return false;
+         }else{
+            return true;
+         }
+    },
+    verifica_token:function(){
+      axios.get(this.apiurl+'pedidosbrinde/'+this.$route.params.token)
+      .then(response=>{
+        this.email = response.data.email;
+        if(response.data.token_inativo != 0){
+           this.$swal.fire({
+            icon: "info",
+            title: "Seu pedido ja foi efetuado estamos preparando o envio",
+            showConfirmButton: false,
+            allowOutsideClick: false
+
+          });
+        }
+      }).catch(error=>{
+
+      })
     }
-  }
+  },
+  beforeMount(){
+    
+ }
 };
 </script>
 

@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Models\Pedidos_Brinde;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -13,16 +14,16 @@ class EmailConfirmacaoCompra implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
     public $tries = 3;
-    private $email;
+    private $pedidos_Brinde;
     /** 
      * Create a new job instance.
      *
      * @return void
      */
-    public function __construct($email)
+    public function __construct(Pedidos_Brinde $pedidos_Brinde)
     {
         //
-        $this->email = $email;
+        $this->pedidos_Brinde = $pedidos_Brinde;
     }
 
     /**
@@ -33,9 +34,8 @@ class EmailConfirmacaoCompra implements ShouldQueue
     public function handle()
     {
         //
-        $mail = $this->email;
         
-        Mail::send(new \App\Mail\EmailConfirmacaoCompra($this->email));
+        Mail::send(new \App\Mail\EmailConfirmacaoCompra($this->pedidos_Brinde));
 
     }
 }

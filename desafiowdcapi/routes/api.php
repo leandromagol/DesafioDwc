@@ -13,7 +13,7 @@
 */
 //Route::resource('pedidosbrinde', 'Api\PedidosBrindeController');
 
-
+Route::resource('cliente', 'Api\ClienteController');
 Route::group(['middleware' => 'cors'], function () {
     Route::get('pedidosbrinde', 'Api\PedidosBrindeController@index');
     Route::get('pedidosbrinde/{id}', 'Api\PedidosBrindeController@show');

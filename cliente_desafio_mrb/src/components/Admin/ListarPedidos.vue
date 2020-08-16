@@ -4,135 +4,44 @@
       <div class="container p-3">
         <div class="row pb-5">
           <div class="col-12 d-flex justify-content-center">
-            <div class="col-lg-6">
+            <div class="">
               <div class="text-center mb-3">
                 <h4 class="text-white">
                   Peididos de etiqueta
                 </h4>
               </div>
               <div class="border p-3 p-md-5 bg-white rounded shadow">
-                <h3>Para receber seu brinde por favor</h3>
-                <form @submit.prevent="enviar_pedido_binde()">
-                  <div class="form-group ">
-                    <label class="d-flex justify-content-start" for="email"
-                      >Email</label
-                    >
-                    <input
-                      v-model="email"
-                      id="email"
-                      placeholder="email@email.com"
-                      class="form-control"
-                      type="email"
-                      name="email"
-                      value
-                    />
-                  </div>
-                  <div class="form-group">
-                    <label class="d-flex justify-content-start" for="nome"
-                      >nome</label
-                    >
-                    <input
-                      v-model="nome"
-                      id="nome"
-                      class="form-control"
-                      type="text"
-                      name="email"
-                      value
-                    />
-                  </div>
-                  <div class="row">
-                    <div class="form-group col-4">
-                      <label class="d-flex justify-content-start" for="cep"
-                        >CEP</label
-                      >
+               <vue-good-table id="my-table"
+  :columns="columns"
+  :rows="rows"
+  @on-page-change="caregar_registros()"
+  :pagination-options="{
+    enabled: true,
+    mode: 'pages',
+    nextLabel: 'Proximo',
+    prevLabel: 'Anterior',
+    rowsPerPageLabel: 'Registros por pagina',
+    pageLabel: 'pagina',
+    ofLabel: 'de',
+  }"
+   :search-options="{
+    enabled: true,
+     placeholder: 'Buscar pedidos de etiqueta',
+  }"
+  :select-options="{ 
+    enabled: true,
+     selectionText: 'Registros selecionados',
+     clearSelectionText: 'limpar',
 
-                      <the-mask
-                        type="text"
-                        v-model="cep"
-                        id="inputCep"
-                        class="form-control"
-                        name="cep"
-                        value
-                        mask="#####-###"
-                        @keyup.native="buscar"
-                      />
-                    </div>
-                    <div class="form-group col-2">
-                      <label class="d-flex justify-content-start" for="uf"
-                        >UF</label
-                      >
-                      <the-mask
-                        type="text"
-                        v-model="uf"
-                        id="uf"
-                        class="form-control"
-                        name="uf"
-                        value
-                        mask="AA"
-                      />
-                    </div>
-                    <div class="form-group col-6">
-                      <label class="d-flex justify-content-start" for="cidade"
-                        >Cidade</label
-                      >
-                      <input
-                        v-model="cidade"
-                        id="cidade"
-                        class="form-control"
-                        type="text"
-                        name="cidade"
-                        value
-                      />
-                    </div>
-                    <div class="form-group col-2">
-                      <label class="d-flex justify-content-start" for="cidade"
-                        >Numero</label
-                      >
-                      <input
-                        v-model="numero"
-                        id="numero"
-                        class="form-control"
-                        type="text"
-                        name="numero"
-                        value
-                      />
-                    </div>
-                    <div class="form-group col-10">
-                      <label
-                        class="d-flex justify-content-start"
-                        for="logradouro"
-                        >Logradouro</label
-                      >
-                      <input
-                        v-model="logradouro"
-                        id="logradouro"
-                        class="form-control"
-                        type="text"
-                        name="logradouro"
-                        value
-                      />
-                    </div>
-                    <div class="form-group col-12">
-                      <label class="d-flex justify-content-start" for="telefone"
-                        >Telefone</label
-                      >
+  }"
+  @on-selected-rows-change="selectionChanged"
 
-                      <the-mask
-                        type="text"
-                        v-model="telefone"
-                        id="telefone"
-                        class="form-control"
-                        name="telefone"
-                        value
-                        :mask="['(##) ####-####', '(##) #####-####']"
-                      />
-                    </div>
-                  </div>
-
-                  <button type="submit" class="btn btn-success mt-3">
-                    Enviar
-                  </button>
-                </form>
+  >
+   <div slot="selected-row-actions">
+    <button v-on:click="mostrar_selecionados" class="btn btn-warning">Enviar</button>
+  </div>
+</vue-good-table>
+               
               </div>
             </div>
           </div>
@@ -145,71 +54,106 @@
 </template>
 
 <script>
+
 import axios from "axios";
-const config = {
-  headers: {
-    'Content-Type': 'application/x-www-form-urlencoded',
-    'Access-Control-Allow-Origin': '*',
-
-  }
-}
-
+import 'vue-good-table/dist/vue-good-table.css'
+import { VueGoodTable } from 'vue-good-table';
 export default {
+  name: "app",
+
+ components: {
+  VueGoodTable,
+},
+
   data() {
     return {
-      title: "Formulario de envio",
-      email: "",
-      nome: "",
-      uf: "",
-      cep: "",
-      cidade: "",
-      numero: "",
-      logradouro: "",
-      telefone: "",
-      message: ""
+      rowSelection: [],
+       columns: [
+        {
+          label: 'Nome',
+          field: 'nome',
+        },
+        {
+          label: 'Email',
+          field: 'email',
+        },
+        {
+          label: 'Cidade',
+          field: 'cidade',
+        },
+        {
+          label:'UF',
+          field:'uf'
+        },
+        {
+          label:'Cep',
+          field:'cep'
+        },
+        {
+          label:"Numero",
+          field:'numero'
+        },
+        {
+          label:'Logradrouro',
+          field:'logradouro'
+        },
+        {
+          label:'Telefone',
+          field:'telefone'
+        },
+        {
+          label:'Enviado',
+          field:'enviado',
+          formatFn:this.pedido_enviado
+        }
+      ],
+      rows: [
+      ],
     };
   },
-  mounted: function() {},
-  methods: {
-    enviar_pedido_binde: function() {
-      axios.put(this.apiurl+'pedidosbrinde/1',{email:this.email,nome:this.nome,uf:this.uf,cep:this.cep,cidade:this.cidade,logradouro:this.logradouro,telefone:this.telefone,numero:this.numero})
-      .then(res=>{
-        console.log(res);
-        if (res.status == 200 ) {
-           this.$swal.fire({
-            icon: "success",
-            title: "Recebemos sua solicitação aguarde logo enviaremos seu binde",
-            showConfirmButton: false
-          });
-        }
-      }).catch(err=>{
 
-      })
+
+  mounted() {
+    this.caregar_registros();
+
+     window.setInterval(() => {
+      this.caregar_registros()
+  }, 300000)
+  },
+
+  methods: {
+    caregar_registros: function(){
+      axios.get(this.apiurl+'cliente').then(response => {
+      this.rows = response.data;
+      console.log(response.data);
+    });
     },
-    buscar: function() {
-      
-      if (/^[0-9]{8}$/.test(this.cep)) {
-        axios
-          .get("https://viacep.com.br/ws/" + this.cep + "/json/")
-          .then(res => {
-            if (res.status == 200) {
-              this.cidade = res.data.localidade;
-              this.uf = res.data.uf;
-              this.logradouro = res.data.bairro + " " + res.data.logradouro;
-            }
-          })
-          .catch(err => {
-            this.$swal.fire({
-            icon: "erro",
-            title: err,
-            showConfirmButton: false
-          });
-          });
+    mostrar_selecionados:function(){
+      console.log(this.rowSelection);
+      this.rowSelection.map(pedido=>{
+        console.log(pedido.id);
+        axios.put(this.apiurl+'cliente/'+pedido.id,{enviado:1}).then(response=>{
+          
+        }).catch(error=>{
+          console.log(error);
+        })
+      })
+      this.caregar_registros();
+    },
+    selectionChanged(params) {
+     this.rowSelection = params.selectedRows;
+    },
+    pedido_enviado:function(enviado){
+      if(enviado == 0){
+        return "Pendente";
+      }else{
+        return "Enviado";
       }
-    }
+    } 
   }
 };
 </script>
+
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped></style>

@@ -13,7 +13,7 @@ export default new Router({
       component: LeadHome
     },
     {
-      path: '/form',
+      path: '/form/:token',
       name: 'Formulario de Envio',
       component: Formulario
     },
